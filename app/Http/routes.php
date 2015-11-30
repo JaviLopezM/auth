@@ -12,23 +12,30 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+
 Route::get('/home', ['as' => 'auth.home', function () { return view('home'); }]);
 
-Route::get('/resource', function () {
-    $authenticated = false;
-    if (Session::has('authenticated')) {
-        if (Session::get('authenticated') == true ) {
-            $authenticated = true;
-        }
-    }
 
-    if ($authenticated) {
+Route::get('/resource', ['as' => 'resource','middleware' => 'auth', function () {
+
         return view('resource');
-    } else {
-        return redirect()->route('auth.login');
-    }
+}]);
 
+
+
+Route::group(['middleware' => 'auth'], function () {
+Route::get('/patata', ['as' => 'patata','middleware' => 'auth', 'uses' => 'ProfileController@show', function () {
+
+    return view('resource');
+    }]);
+    Route::get('/phpinfo', function(){
+        return phpinfo();
+    });
 });
+
+
+
+
 
 Route::get('/flushSession',
     ['as' => 'session.flush',
@@ -46,3 +53,10 @@ Route::post('/register',
     ['as' => 'register.postRegister',
         'uses' => 'RegisterController@postRegister']
 );
+
+Route::get('/checkEmailExists',
+    ['as' => 'checkEmailExists',
+     'uses' => 'ApiController@checkEmailExists']
+);
+
+

@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests;
 
+use Auth;
 use Hash;
 use Illuminate\Http\Request;
 
 use App\User;
+use Session;
 
 /**
  * Class LoginController
@@ -29,43 +31,14 @@ class LoginController extends Controller
             'password' => 'required'
         ]);
 
-        if ($this->login($request->email,$request->password)) {
-            //REDIRECT TO HOME
+        if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+            // Authentication passed...
             return redirect()->route('auth.home');
+            //return redirect()->intended('dashboard');
         } else {
-            //REDIRECT BACK
-            $request->session()->flash('login_error',
-                'Login incorrecte');
-            //Session::flash()
             return redirect()->route('auth.login');
         }
     }
-
-    /**
-     * Login
-     * @param $email
-     * @param $password
-     * @return bool
-     */
-    private function login($email, $password)
-    {
-        //TODO: Mirar bé a la base de dades
-
-        //$user = User::findOrFail(id);
-        //$user = User::all();
-        $user = User::where('email',$email)->first();
-
-        if ($user == null) {
-            return false;
-        }
-
-        if (Hash::check($password, $user->password)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     /**
      * get Login
      * @return \Illuminate\View\View

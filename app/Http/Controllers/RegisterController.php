@@ -9,6 +9,9 @@ use App\Http\Requests;
 
 class RegisterController extends Controller
 {
+    protected $email;
+    protected $name;
+
     public function getRegister()
     {
         //echo "Aqui va el registre";
@@ -33,9 +36,37 @@ class RegisterController extends Controller
         $user->email = $request->get('email');
         $user->save();
 
+        $this->email = $request->get('email');
+        $this->name = $request->get('name');
+
+        $this->sendRegisterEmail();
+
         return redirect()->route('auth.login');
         //User::create(Input::all());
         //User::create($request->all());
 
+    }
+
+
+    public function sendRegisterEmail() {
+
+        $emailData = new \stdClass();
+
+        $emailData->email = $this->email;
+        $emailData->name = $this->name;
+        $emailData->subject = "Welcome user " . $this->name;
+        $emailData->footer = "footer here";
+        $emailData->header = "header here";
+
+        //$data['name'] = "Pepito";
+        $data['name'] = $this->name;
+        $data['var2'] = "valor2";
+
+        \Mail::queue('emails.message', $data, function($message)
+                                                use ($emailData) {
+            $message->from(env('CONTACT_MAIL'), env('CONTACT_NAME'));
+            $message->to($emailData->email, $emailData->name);
+            $message->subject($emailData->subject);
+        });
     }
 }
